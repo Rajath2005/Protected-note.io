@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protected Text</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        textarea { width: 90%; height: 300px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Protected Text</h2>
+    <input type="text" id="noteName" placeholder="Enter Note Name">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button onclick="loadNote()">Access</button>
+    <textarea id="noteContent" placeholder="Your text here..." style="display:none;"></textarea>
+
+    <script>
+        async function loadNote() {
+            const name = document.getElementById("noteName").value;
+            const password = document.getElementById("password").value;
+            if (!name || !password) return alert("Enter name and password!");
+
+            let response = await fetch(`/getNote?name=${name}&password=${btoa(password)}`);
+            let data = await response.json();
+
+            document.getElementById("noteContent").value = data.note || "";
+            document.getElementById("noteContent").style.display = "block";
+
+            document.getElementById("noteContent").addEventListener("input", async () => {
+                await fetch('/saveNote', {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, password: btoa(password), note: document.getElementById("noteContent").value })
+                });
+            });
+        }
+    </script>
+</body>
+</html>
